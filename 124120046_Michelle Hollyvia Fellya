@@ -1,0 +1,66 @@
+import csv
+
+# ================================
+# 1. LOAD DATA DARI FILE TXT
+# ================================
+
+input_file = "data.txt"
+output_file = "output.csv"
+
+data = []
+
+try:
+    with open(input_file, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                # Convert ke integer
+                shot = int(row["shot"])
+                receiver = int(row["receiver"])
+                twt = float(row["twt"])
+
+                data.append({
+                    "shot": shot,
+                    "receiver": receiver,
+                    "twt": twt
+                })
+            except ValueError:
+                print("⚠ Error: Format angka salah pada baris:", row)
+
+except FileNotFoundError:
+    print(f"❌ File '{input_file}' tidak ditemukan!")
+    exit()
+
+if not data:
+    print("❌ Data kosong atau tidak terbaca!")
+    exit()
+
+# ================================
+# 2. NORMALISASI TWT
+# ================================
+
+twt_values = [d["twt"] for d in data]
+twt_min = min(twt_values)
+
+# Cek error: pembagi tidak boleh 0
+if (600 - twt_min) == 0:
+    print("❌ Error: Normalisasi gagal karena 600 - twt_min = 0")
+    exit()
+
+for d in data:
+    twt = d["twt"]
+    # Normalisasi
+    d["twt_norm"] = (twt - twt_min) / (600 - twt_min)
+
+# ================================
+# 3. SIMPAN KE FILE CSV (ASCII)
+# ================================
+
+fieldnames = ["shot", "receiver", "twt", "twt_norm"]
+
+with open(output_file, "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(data)
+
+print("✅ Data berhasil diproses dan disimpan ke", output_file)
