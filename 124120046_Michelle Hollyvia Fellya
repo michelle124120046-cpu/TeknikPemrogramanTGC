@@ -1,0 +1,70 @@
+# ===============================
+# DATA AWAL
+# ===============================
+
+survey = {
+    "Survey_A": [
+        {"trace_id": 1, "receiver": "R1", "offset": 100, "QC_flag": "OK"},
+        {"trace_id": 2, "receiver": "R2", "offset": 150, "QC_flag": "OK"},
+        {"trace_id": 3, "receiver": "R3", "offset": 200, "QC_flag": "BAD"}
+    ],
+
+    "Survey_B": [
+        {"trace_id": 4, "receiver": "R1", "offset": 120, "QC_flag": "OK"},
+        {"trace_id": 5, "receiver": "R4", "offset": 250, "QC_flag": "OK"},
+        {"trace_id": 6, "receiver": "R2", "offset": 300, "QC_flag": "BAD"}
+    ],
+
+    "Survey_C": [
+        {"trace_id": 7, "receiver": "R5", "offset": 180, "QC_flag": "OK"}
+    ]
+}
+
+# ===============================
+# 1. Tampilkan trace_id yang QC_flag = BAD
+# ===============================
+
+bad_traces = []
+for line in survey.values():
+    for trace in line:
+        if trace["QC_flag"] == "BAD":
+            bad_traces.append(trace["trace_id"])
+
+print("1. Trace ID yang QC_flag = BAD:", bad_traces)
+
+# ===============================
+# 2. Hitung total trace dari seluruh survey
+# ===============================
+
+total_trace = sum(len(line) for line in survey.values())
+print("2. Total trace seluruh survey =", total_trace)
+
+# ===============================
+# 3. Cari survey yang memiliki jumlah trace paling banyak
+# ===============================
+
+max_survey = max(survey, key=lambda s: len(survey[s]))
+print("3. Survey dengan trace terbanyak =", max_survey)
+
+# ===============================
+# 4. Buat set berisi semua receiver unik
+# ===============================
+
+unique_receiver = set()
+for line in survey.values():
+    for trace in line:
+        unique_receiver.add(trace["receiver"])
+
+print("4. Receiver unik dalam data =", unique_receiver)
+
+# ===============================
+# 5. Buat dictionary baru: {receiver : jumlah_trace_muncul}
+# ===============================
+
+receiver_count = {}
+for line in survey.values():
+    for trace in line:
+        rcv = trace["receiver"]
+        receiver_count[rcv] = receiver_count.get(rcv, 0) + 1
+
+print("5. Jumlah kemunculan receiver =", receiver_count)
