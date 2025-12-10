@@ -1,0 +1,52 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
+
+# ==============================================================
+# 1. INPUT DATA SURVEI (X, Y, Total Field)
+# ==============================================================
+
+X = np.array([0, 0, 50, 50, 100, 100])
+Y = np.array([0, 50, 0, 50, 0, 50])
+Total_Field = np.array([43210, 43280, 43100, 43420, 43050, 43500])
+
+# ==============================================================
+# 2. MEMBUAT GRID UNTUK KONTUR
+# ==============================================================
+
+grid_x, grid_y = np.meshgrid(
+    np.linspace(min(X), max(X), 100),   # membuat grid X dari 0–100
+    np.linspace(min(Y), max(Y), 100)    # membuat grid Y dari 0–50
+)
+
+# ==============================================================
+# 3. INTERPOLASI DATA (AGAR BISA DIKONTURKAN)
+# ==============================================================
+
+grid_z = griddata(
+    (X, Y),           # koordinat titik asli
+    Total_Field,      # nilai medan magnet
+    (grid_x, grid_y), # titik grid baru
+    method="cubic"    # interpolasi cubic → menghasilkan kontur halus
+)
+
+# ==============================================================
+# 4. VISUALISASI PETA KONTUR
+# ==============================================================
+
+plt.figure(figsize=(8, 6))
+
+# Peta kontur berwarna
+contour = plt.contourf(grid_x, grid_y, grid_z, levels=20, cmap="coolwarm")
+plt.colorbar(contour, label="Total Field (nT)")
+
+# Plot titik asli
+plt.scatter(X, Y, c="black", s=40, label="Titik Pengukuran")
+
+plt.title("Peta Anomali Medan Magnetik (Data Sederhana)")
+plt.xlabel("X (m)")
+plt.ylabel("Y (m)")
+plt.legend()
+plt.grid(True)
+
+plt.show()
