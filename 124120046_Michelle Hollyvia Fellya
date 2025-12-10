@@ -1,0 +1,66 @@
+from abc import ABC, abstractmethod
+
+# =====================
+# Class Abstrak
+# =====================
+class Survey(ABC):
+    def __init__(self, nama_survey, lokasi):
+        self.nama_survey = nama_survey
+        self.lokasi = lokasi
+
+    @abstractmethod
+    def processing(self):
+        """Method abstrak yang wajib di-override."""
+        pass
+
+    def info(self):
+        return f"{self.nama_survey} di {self.lokasi}"
+
+
+# =====================
+# Turunan Survey
+# =====================
+
+class SeismicSurvey(Survey):
+    def __init__(self, lokasi, frekuensi):
+        super().__init__("Seismic Survey", lokasi)
+        self.frekuensi = frekuensi
+
+    def processing(self):
+        return f"[SEISMIK] Filtering sinyal pada {self.frekuensi} Hz dijalankan."
+
+
+class GravitySurvey(Survey):
+    def __init__(self, lokasi, grid):
+        super().__init__("Gravity Survey", lokasi)
+        self.grid = grid
+
+    def processing(self):
+        return f"[GRAVITY] Upward continuation grid {self.grid} diterapkan."
+
+
+class MagnetikSurvey(Survey):
+    def __init__(self, lokasi, metode):
+        super().__init__("Magnetik Survey", lokasi)
+        self.metode = metode
+
+    def processing(self):
+        return f"[MAGNETIK] Proses anomaly mapping menggunakan metode {self.metode}."
+
+
+# =====================
+# Penggunaan
+# =====================
+
+# Membuat daftar objek survey
+daftar_survey = [
+    SeismicSurvey("Line-12", frekuensi=80),
+    GravitySurvey("Area Utara", grid="50x50"),
+    MagnetikSurvey("Blok C", metode="Reduction to Pole")
+]
+
+# Iterasi memanggil processing() → konsep POLYMORPHISM
+for s in daftar_survey:
+    print(s.info())
+    print(s.processing())
+    print("-" * 40)
