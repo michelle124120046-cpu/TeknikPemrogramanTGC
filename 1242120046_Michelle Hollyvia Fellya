@@ -1,0 +1,36 @@
+class Sensor:
+    def __init__(self, id_sensor, lokasi, jenis):
+        self.id_sensor = id_sensor
+        self.lokasi = lokasi
+        self.jenis = jenis
+
+    def info(self):
+        return f"Sensor ID: {self.id_sensor}, Lokasi: {self.lokasi}, Jenis: {self.jenis}"
+
+
+class SensorSeismik(Sensor):
+    def __init__(self, id_sensor, lokasi, jenis, frekuensi_sampling):
+        super().__init__(id_sensor, lokasi, jenis)
+        self.frekuensi_sampling = frekuensi_sampling
+
+    def jumlah_sampel(self, durasi_detik):
+        """
+        Menghitung jumlah sampel berdasarkan frekuensi sampling (Hz).
+        jumlah sampel = frekuensi * durasi
+        """
+        return self.frekuensi_sampling * durasi_detik
+
+
+# ======================
+# Contoh penggunaan
+# ======================
+
+# Membuat objek sensor biasa
+s1 = Sensor("S001", "Site-12", "Temperature")
+print(s1.info())
+
+# Membuat sensor seismik
+s2 = SensorSeismik("SS10", "Line-5", "Seismik", frekuensi_sampling=100)
+
+print(s2.info())
+print("Jumlah sampel 10 detik =", s2.jumlah_sampel(10))
