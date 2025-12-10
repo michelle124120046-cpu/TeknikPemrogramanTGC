@@ -1,0 +1,135 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import griddata
+import os
+
+# ==============================================================
+# 0. Lokasi File CSV (Auto-safe)
+# ==============================================================
+
+# Path file CSV akan otomatis sesuai folder script
+folder_script = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(folder_script, "survey_gravitasi.csv")
+
+print("Membaca file:", file_path)
+
+# ==============================================================
+# 1. LOAD & EKSPLORASI DATA
+# ==============================================================
+
+df = pd.read_csv(file_path)
+
+print("\n=== INFO DATA ===")
+print(df.info())
+
+print("\n=== DESKRIPSI STATISTIK ===")
+print(df.describe())
+
+# Cek missing values
+print("\n=== Missing Values ===")
+print(df.isnull().sum())
+
+# Hapus missing value pada anomaly
+df = df.dropna(subset=["Anomali_Gravitasi_mGal"])
+
+
+# Scatter plot sebaran titik
+plt.figure(figsize=(7, 5))
+plt.scatter(df["X"], df["Y"], s=10, c='black')
+plt.title("Sebaran Titik Survei Gravitasi")
+plt.xlabel("X (meter)")
+plt.ylabel("Y (meter)")
+plt.grid(True)
+plt.show()
+
+
+# ==============================================================
+# 2. PERSIAPAN GRID (NumPy)
+# ==============================================================
+
+x = df["X"].values
+y = df["Y"].values
+anom = df["Anomali_Gravitasi_mGal"].values
+
+res = 200  # resolusi grid
+
+grid_x, grid_y = np.meshgrid(
+    np.linspace(min(x), max(x), res),
+    np.linspace(min(y), max(y), res)
+)
+
+
+# ==============================================================
+# 3. INTERPOLASI: Linear & Cubic (SciPy)
+# ==============================================================
+
+print("\nMelakukan interpolasi...")
+
+grid_linear = griddata((x, y), anom, (grid_x, grid_y), method="linear")
+grid_cubic  = griddata((x, y), anom, (grid_x, grid_y), method="cubic")
+
+
+# ==============================================================
+# 4. VISUALISASI KONTUR
+# ==============================================================
+
+plt.figure(figsize=(12, 5))
+
+# --- Linear ---
+plt.subplot(1, 2, 1)
+c1 = plt.contourf(grid_x, grid_y, grid_linear, cmap="seismic", levels=30)
+plt.colorbar(c1)
+plt.title("Interpolasi Linear")
+plt.xlabel("X (m)")
+plt.ylabel("Y (m)")
+
+# --- Cubic ---
+plt.subplot(1, 2, 2)
+c2 = plt.contourf(grid_x, grid_y, grid_cubic, cmap="seismic", levels=30)
+plt.colorbar(c2)
+plt.title("Interpolasi Cubic")
+plt.xlabel("X (m)")
+plt.ylabel("Y (m)")
+
+plt.tight_layout()
+plt.show()
+
+
+# ==============================================================
+# 5. ANALISIS C4: Anomali Terkuat
+# ==============================================================
+
+max_idx = np.argmax(anom)
+min_idx = np.argmin(anom)
+
+anom_pos = (x[max_idx], y[max_idx], anom[max_idx])
+anom_neg = (x[min_idx], y[min_idx], anom[min_idx])
+
+print("\n=== ANOMALI POSITIF TERKUAT ===")
+print(f"Lokasi: X={anom_pos[0]:.2f}, Y={anom_pos[1]:.2f}, Nilai={anom_pos[2]:.3f} mGal")
+
+print("\n=== ANOMALI NEGATIF TERKUAT ===")
+print(f"Lokasi: X={anom_neg[0]:.2f}, Y={anom_neg[1]:.2f}, Nilai={anom_neg[2]:.3f} mGal")
+
+
+# ==============================================================
+# 6. PETA TITIK + ANOMALI EKSTREM
+# ==============================================================
+
+plt.figure(figsize=(7, 6))
+plt.scatter(df["X"], df["Y"], c=anom, cmap="seismic", s=20)
+plt.colorbar(label="Anomali (mGal)")
+
+# tandai anomali ekstrem
+plt.scatter(anom_pos[0], anom_pos[1], c="yellow", s=120, edgecolors="black", label="Positif Terkuat")
+plt.scatter(anom_neg[0], anom_neg[1], c="lime", s=120, edgecolors="black", label="Negatif Terkuat")
+
+plt.title("Peta Anomali Gravitasi (Ekstrem)")
+plt.xlabel("X (m)")
+plt.ylabel("Y (m)")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+print("\nAnalisis selesai.\n")
