@@ -1,0 +1,12 @@
+import konversi as kv
+
+def main():
+    print("=== Konversi Suhu ===")
+
+    celcius = float(input("Input suhu (°C): "))
+    print(f"Hasil konversi: {kv.c_to_f(celcius)} °F")
+
+    fahrenheit = float(input("Input suhu (°F): "))
+    print(f"Hasil konversi: {kv.f_to_c(fahrenheit)} °C")
+
+main()
