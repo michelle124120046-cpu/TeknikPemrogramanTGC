@@ -1,0 +1,101 @@
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =========================
+# Simulasi Data Anomali Magnetik
+# =========================
+# Ukuran grid
+nx, ny = 50, 50
+x = np.linspace(0, 10, nx)
+y = np.linspace(0, 10, ny)
+
+# Contoh data
+np.random.seed(0)
+observed = np.random.rand(ny, nx) * 100  # data observasi
+regional = np.random.rand(ny, nx) * 50   # data regional
+residual = observed - regional           # residual
+
+# =========================
+# Sidebar: Kontrol
+# =========================
+st.sidebar.title("Kontrol Peta Magnetik")
+
+# Pilih colormap
+cmap_options = ["viridis", "plasma", "inferno", "magma", "cividis", "gray", "seismic"]
+cmap_choice = st.sidebar.selectbox("Pilih Colormap", cmap_options, index=0)
+
+# Mode Auto / Manual
+scale_mode = st.sidebar.radio("Mode Skala", ["Auto", "Manual"])
+
+# Slider vmin/vmax jika Manual
+if scale_mode == "Manual":
+    vmin = float(st.sidebar.slider("vmin", float(min(observed.min(), regional.min(), residual.min())),
+                                   float(max(observed.max(), regional.max(), residual.max())),
+                                   float(observed.min())))
+    vmax = float(st.sidebar.slider("vmax", float(min(observed.min(), regional.min(), residual.min())),
+                                   float(max(observed.max(), regional.max(), residual.max())),
+                                   float(observed.max())))
+else:
+    vmin = None
+    vmax = None
+
+# Opsi tambahan
+option = st.sidebar.radio("Opsi Tambahan", ["Normal", "Balik Sumbu", "Pilih Range Grid", "Simpan Gambar"])
+
+# Pilih range grid jika opsi "Pilih Range Grid"
+if option == "Pilih Range Grid":
+    x_min, x_max = st.sidebar.slider("Rentang X", 0, nx-1, (0, nx-1))
+    y_min, y_max = st.sidebar.slider("Rentang Y", 0, ny-1, (0, ny-1))
+else:
+    x_min, x_max = 0, nx-1
+    y_min, y_max = 0, ny-1
+
+# =========================
+# Proses Data sesuai Opsi
+# =========================
+def apply_option(data):
+    # Crop range
+    data_plot = data[y_min:y_max+1, x_min:x_max+1]
+    # Balik sumbu jika dipilih
+    if option == "Balik Sumbu":
+        data_plot = data_plot[::-1, :]
+    return data_plot
+
+obs_plot = apply_option(observed)
+reg_plot = apply_option(regional)
+res_plot = apply_option(residual)
+
+# =========================
+# Plot Peta Magnetik
+# =========================
+st.title("Dashboard Anomali Magnetik")
+
+fig, axes = plt.subplots(1,3, figsize=(18,6))
+
+im0 = axes[0].imshow(obs_plot, cmap=cmap_choice, vmin=vmin, vmax=vmax, origin='upper')
+axes[0].set_title("Observasi")
+axes[0].set_xlabel("X")
+axes[0].set_ylabel("Y")
+plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04, label="nT")
+
+im1 = axes[1].imshow(reg_plot, cmap=cmap_choice, vmin=vmin, vmax=vmax, origin='upper')
+axes[1].set_title("Regional")
+axes[1].set_xlabel("X")
+axes[1].set_ylabel("Y")
+plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04, label="nT")
+
+im2 = axes[2].imshow(res_plot, cmap=cmap_choice, vmin=vmin, vmax=vmax, origin='upper')
+axes[2].set_title("Residual")
+axes[2].set_xlabel("X")
+axes[2].set_ylabel("Y")
+plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04, label="nT")
+
+st.pyplot(fig)
+
+# =========================
+# Simpan Gambar jika dipilih
+# =========================
+if option == "Simpan Gambar":
+    fig.savefig("magnetic_map.png")
+    st.success("Peta tersimpan sebagai magnetic_map.png")
