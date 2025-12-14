@@ -1,0 +1,68 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# =========================
+# Judul Aplikasi
+# =========================
+st.set_page_config(page_title="Analisis Anomali Gravitasi")
+st.title("Dashboard Analisis Anomali Gravitasi")
+
+# =========================
+# Data Contoh
+# =========================
+data = {
+    "X": [10,20,30,40,50,60,70,80,90,100],
+    "Y": [50,55,48,52,50,49,53,51,49,50],
+    "Gravity_Anomaly": [1.2,1.5,1.8,2.5,3.0,2.8,3.2,1.5,1.1,0.8]
+}
+
+df = pd.DataFrame(data)
+
+# =========================
+# Tampilkan Data
+# =========================
+st.subheader("Data Anomali Gravitasi")
+st.dataframe(df)
+
+# =========================
+# Slider Filter X
+# =========================
+st.subheader("Filter Data Berdasarkan X")
+
+x_min, x_max = st.slider(
+    "Pilih rentang nilai X",
+    min_value=int(df["X"].min()),
+    max_value=int(df["X"].max()),
+    value=(20, 80)
+)
+
+df_filter = df[(df["X"] >= x_min) & (df["X"] <= x_max)]
+
+# =========================
+# Scatter Plot
+# =========================
+st.subheader("Scatterplot X vs Y")
+
+fig, ax = plt.subplots()
+scatter = ax.scatter(
+    df_filter["X"],
+    df_filter["Y"],
+    c=df_filter["Gravity_Anomaly"],
+    cmap="viridis",
+    s=100
+)
+
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+plt.colorbar(scatter, ax=ax, label="Gravity Anomaly")
+
+st.pyplot(fig)
+
+# =========================
+# Soal Analisis
+# =========================
+st.subheader("Analisis")
+st.text_area(
+    "Jelaskan bagaimana slider X membantu analisis anomali gravitasi"
+)
