@@ -1,0 +1,76 @@
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ----------------------------
+# Simulasi Data Seismik
+# ----------------------------
+n_traces = 50
+n_samples = 200
+np.random.seed(0)
+seismic = np.random.randn(n_samples, n_traces)  # amplitudo seismik
+time = np.linspace(0, 2, n_samples)  # sumbu waktu (detik)
+traces = np.arange(n_traces)  # indeks trace
+
+# ----------------------------
+# Sidebar Kontrol
+# ----------------------------
+st.sidebar.title("Kontrol Plot Seismik")
+
+# Pilih colormap
+cmap_options = ["viridis", "plasma", "inferno", "magma", "cividis", "gray", "seismic"]
+cmap_choice = st.sidebar.selectbox("Pilih Colormap", cmap_options, index=0)
+
+# Mode Auto / Manual
+scale_mode = st.sidebar.radio("Mode Skala", ["Auto", "Manual"])
+
+# Slider vmin/vmax hanya jika Manual
+if scale_mode == "Manual":
+    vmin = float(st.sidebar.slider("vmin", float(seismic.min()), float(seismic.max()), float(seismic.min())))
+    vmax = float(st.sidebar.slider("vmax", float(seismic.min()), float(seismic.max()), float(seismic.max())))
+else:
+    vmin = None
+    vmax = None
+
+# Opsi tambahan
+option = st.sidebar.radio("Opsi Tambahan", ["Normal", "Balik Waktu", "Rentang Trace", "Simpan Gambar"])
+
+if option == "Rentang Trace":
+    trace_min, trace_max = st.sidebar.slider("Pilih Rentang Trace", 0, n_traces-1, (0, n_traces-1))
+else:
+    trace_min, trace_max = 0, n_traces-1
+
+# ----------------------------
+# Proses Data sesuai Opsi
+# ----------------------------
+plot_data = seismic[:, trace_min:trace_max+1]
+
+if option == "Balik Waktu":
+    plot_data = plot_data[::-1, :]
+    time_plot = time[::-1]
+else:
+    time_plot = time
+
+# ----------------------------
+# Plot Seismik
+# ----------------------------
+fig, ax = plt.subplots(figsize=(10,6))
+im = ax.imshow(
+    plot_data,
+    aspect='auto',
+    cmap=cmap_choice,
+    extent=[trace_min, trace_max, time_plot[-1], time_plot[0]],
+    vmin=vmin,
+    vmax=vmax
+)
+ax.set_xlabel("Trace")
+ax.set_ylabel("Time (s)")
+plt.colorbar(im, ax=ax, label="Amplitude")
+st.pyplot(fig)
+
+# ----------------------------
+# Simpan Gambar jika dipilih
+# ----------------------------
+if option == "Simpan Gambar":
+    fig.savefig("seismic_plot.png")
+    st.success("Plot tersimpan sebagai seismic_plot.png")
